@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cellar — Homebrew CLI tools, explained in pictures</title>
+<meta name="description" content="The Homebrew command-line tools worth installing, each explained in one picture: fzf, bat, ripgrep, fd, eza, zoxide, jq, delta and more.">
+<meta name="color-scheme" content="dark">
+<link rel="preload" href="fonts/Geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/GeistMono.woff2" as="font" type="font/woff2" crossorigin>
+<script>document.documentElement.classList.add('js')</script>
+<style>
+@font-face{font-family:"Geist";src:url(fonts/Geist.woff2) format("woff2");font-weight:100 900;font-display:swap}
+@font-face{font-family:"Geist Mono";src:url(fonts/GeistMono.woff2) format("woff2");font-weight:100 900;font-display:swap}
+@font-face{font-family:"Instrument Serif";src:url(fonts/InstrumentSerif-Italic.woff2) format("woff2");font-style:italic;font-weight:400;font-display:swap}
+
+/* ───────── tokens ───────── */
+:root{
+  --bg:#070709; --ink:#f6f5f0; --mut:#a09fa9; --dim:#5b5a65; --line:#222229; --rail:#121216;
+  --lime:#c8f542; --violet:#a070ff; --pink:#ff4f9a; --orange:#ff8a2a; --yellow:#ffd84a;
+  --cyan:#3fd9e6; --blue:#5b9bff; --red:#ff5f57; --green:#4ade80; --teal:#2dd4bf;
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:"Geist Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --serif:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+
+/* ───────── base ───────── */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;background:var(--bg)}
+body{margin:0;padding:0 16px;color:var(--ink);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+h1,h2,h3,h4,p,pre{margin:0}
+code,pre,kbd{font-family:var(--mono)}
+::selection{background:var(--lime);color:#000}
+:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+[id]{scroll-margin-top:72px}
+
+/* the page is one ruled sheet: two outer rails, three faint inner ones */
+.wrap{max-width:1280px;margin:0 auto;border-inline:1px solid var(--line);
+  background:linear-gradient(90deg,var(--rail) 1px,transparent 1px) 0 0/25% 100%}
+.sec{position:relative;border-bottom:1px solid var(--line)}
+.sec::before,.sec::after{content:"";position:absolute;bottom:-7px;width:13px;height:13px;z-index:5;pointer-events:none;
+  background:linear-gradient(var(--ink),var(--ink)) center/100% 1px no-repeat,linear-gradient(var(--ink),var(--ink)) center/1px 100% no-repeat}
+.sec::before{left:-7px}.sec::after{right:-7px}
+em.s{font:italic 400 1.08em/1 var(--serif);letter-spacing:-.02em}
+
+.grid{display:grid;gap:1px;background:var(--line)}
+.grid>*{background:var(--bg);min-width:0}
+
+/* syntax */
+.g{color:var(--green)}.b{color:var(--blue)}.p{color:var(--violet)}.y{color:var(--yellow)}.r{color:var(--red)}.c{color:var(--cyan)}.o{color:var(--orange)}.d{color:var(--dim)}.w{color:#fff}
+.pr{color:var(--a,var(--lime));user-select:none}
+.caret{display:inline-block;width:.6em;height:1.15em;vertical-align:-.2em;background:var(--a,var(--lime));animation:blink 1.1s steps(1,end) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* scroll reveal (only when JS is running) */
+.js .rv{opacity:0;transform:translateY(28px)}
+.js .rv.in{opacity:1;transform:none;transition:opacity .7s var(--ease),transform .7s var(--ease);transition-delay:var(--d,0s)}
+
+/* ───────── nav ───────── */
+.nav{position:sticky;top:0;z-index:30;display:flex;align-items:stretch;height:56px;border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.logo{display:flex;align-items:center;gap:12px;padding:0 24px;border-right:1px solid var(--line);font:600 15px/1 var(--mono)}
+.logo i{width:14px;height:14px;background:var(--lime);box-shadow:5px 5px 0 var(--violet)}
+.nav nav{display:flex;margin-left:auto}
+.nav nav a{display:flex;align-items:center;gap:10px;padding:0 22px;border-left:1px solid var(--line);font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mut);transition:color .15s,background .15s}
+.nav nav a:hover{color:var(--ink);background:#111116}
+.nav nav a.cta{background:var(--lime);color:#000}
+.nav nav a.cta:hover{background:#fff}
+kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border:1px solid var(--dim);font-size:11px;line-height:1;color:var(--mut)}
+
+/* ───────── hero ───────── */
+.stage{--a:var(--lime);display:grid;grid-template-columns:5fr 8fr}
+.stage-l{container-type:inline-size;display:flex;flex-direction:column;padding:48px;border-right:1px solid var(--line);background:var(--bg)}
+h1{font-size:clamp(56px,7vw,96px);font-weight:600;letter-spacing:-.065em}
+@supports (font-size:1cqi){h1{font-size:min(24cqi,128px)}}
+h1>span{display:block;line-height:1.1;margin-top:-.13em;white-space:nowrap}
+h1>span:first-child{margin-top:-.1em}
+.slot{display:grid;height:1.1em;overflow:hidden}
+.slot i{grid-area:1/1;font-style:normal}
+.slot .in{animation:in .5s var(--ease) both}
+.slot .out{animation:out .5s var(--ease) both}
+@keyframes in{from{transform:translateY(105%)}}
+@keyframes out{to{transform:translateY(-105%)}}
+.slot.old{color:var(--dim)}
+.slot.old i{justify-self:start;text-decoration:line-through;text-decoration-thickness:.055em;text-decoration-color:var(--pink)}
+.slot.new{color:var(--a);transition:color .3s}
+.lede{margin-top:auto;padding-top:48px;font-size:19px;line-height:1.45;color:var(--mut);max-width:26ch;text-wrap:pretty}
+.btn{display:inline-flex;align-items:center;align-self:flex-start;gap:10px;height:52px;margin-top:28px;padding:0 22px;background:var(--lime);color:#000;font:500 13px/1 var(--mono);letter-spacing:.02em;transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.btn:hover{transform:translate(-3px,-3px);box-shadow:6px 6px 0 var(--violet)}
+
+.stage-r{position:relative;display:flex;align-items:center;justify-content:center;padding:44px 40px 52px;overflow:hidden;min-width:0;background:var(--bg)}
+/* colour field cut into pixels by a dark lattice; a soft light follows the cursor */
+.mosaic{position:absolute;inset:0;animation:hue 14s ease-in-out infinite alternate;
+  background:radial-gradient(46% 62% at 12% 78%,#7c3aed 0,transparent 70%),radial-gradient(40% 58% at 52% 22%,#ff3d8b 0,transparent 70%),radial-gradient(46% 66% at 92% 76%,#ff7a1a 0,transparent 72%),radial-gradient(30% 40% at 78% 8%,#c8f542 0,transparent 70%)}
+.mosaic::before{content:"";position:absolute;inset:0;background:radial-gradient(260px at var(--mx,-999px) var(--my,-999px),rgba(255,255,255,.5),transparent 70%);mix-blend-mode:overlay}
+.mosaic::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(var(--bg) 3px,transparent 3px) 0 0/18px 18px,linear-gradient(90deg,var(--bg) 3px,transparent 3px) 0 0/18px 18px}
+@keyframes hue{to{filter:hue-rotate(-50deg) saturate(1.2)}}
+
+.win{position:relative;width:100%;background:#08080b;border:1px solid #34343d;color:#dcdce2;font:13.5px/26px var(--mono);box-shadow:0 40px 100px -10px rgba(0,0,0,.9),14px 14px 0 rgba(0,0,0,.55)}
+.win-bar{display:flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-bottom:1px solid #26262d;color:var(--dim);font-size:11.5px}
+.win-bar i{width:9px;height:9px;border:1px solid var(--dim)}
+.win-bar i:first-child{background:var(--a);border-color:var(--a);transition:background .3s,border-color .3s}
+.win-bar span{margin-left:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.win-bar span+span{margin-left:auto}
+
+/* a working fzf: filter the sixteen tools, preview on the right */
+.fzf{display:grid;grid-template-columns:232px minmax(0,1fr)}
+.fzf-l{padding:14px 0 16px;min-width:0}
+.fzf-q{display:flex;gap:1ch;padding:0 18px;cursor:text}
+.fzf-q input{flex:1;min-width:0;height:26px;padding:0;border:0;outline:0;background:none;color:#fff;font:inherit;caret-color:var(--a);caret-shape:block}
+.fzf-q input::placeholder{color:var(--dim)}
+.fzf-n{display:flex;align-items:center;gap:1ch;padding:0 18px 0 calc(18px + 2ch);color:var(--dim)}
+.fzf-n b{color:var(--a);font-weight:400}
+.fzf-n::after{content:"";flex:1;height:1px;background:#2c2c35}
+.fzf-rows{height:416px;overflow:hidden}
+.row{display:flex;justify-content:space-between;height:26px;padding:0 18px 0 calc(18px + 2ch);position:relative;cursor:pointer;color:#b9b9c2}
+.row:hover{color:#fff}
+.row.sel{background:#1a1a21;color:#fff}
+.row.sel::before{content:"";position:absolute;left:18px;top:3px;bottom:3px;width:.5ch;background:var(--a)}
+.row b{font-weight:400;color:var(--a)}
+.row s{color:var(--dim);text-decoration-color:#44444e}
+.none{padding:0 18px 0 calc(18px + 2ch);color:var(--dim)}
+.fzf-p{display:flex;flex-direction:column;border-left:1px solid #26262d;min-width:0}
+.pv-h{display:flex;align-items:baseline;gap:14px;padding:13px 18px 9px;border-bottom:1px solid #26262d;white-space:nowrap;overflow:hidden}
+.pv-h b{font-weight:600;font-size:15px;color:var(--a)}
+.pv-h span{color:var(--dim);overflow:hidden;text-overflow:ellipsis}
+.pv-b{flex:1;display:flex;min-height:0;overflow:hidden}
+.pv-f{display:flex;align-items:center;border-top:1px solid #26262d;height:44px;font-size:12.5px}
+.pv-f button{flex:1;display:flex;align-items:center;gap:1ch;height:100%;padding:0 18px;min-width:0;white-space:nowrap;transition:background .2s,color .2s}
+.pv-f button:hover{background:var(--a);color:#000}
+.pv-f button:hover .pr,.pv-f button:hover em{color:#000}
+.pv-f em{margin-left:auto;font-style:normal;color:var(--dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.pv-f a{display:flex;align-items:center;gap:8px;height:100%;padding:0 18px;border-left:1px solid #26262d;color:var(--mut);font-size:11px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;transition:color .2s}
+.pv-f a:hover{color:var(--a)}
+.pv-f a[hidden]{display:none}
+
+/* ───────── marquee ───────── */
+.tape{overflow:hidden;white-space:nowrap;height:104px;display:flex;align-items:center;background:var(--bg)}
+.tape div{display:inline-flex;align-items:center;gap:36px;padding-right:36px;animation:tape 48s linear infinite;font:600 52px/1 var(--mono);letter-spacing:-.05em}
+.tape span:nth-child(4n+1){color:var(--bg);-webkit-text-stroke:2px var(--mut);paint-order:stroke fill}
+.tape u{text-decoration:none;font-size:22px;color:var(--lime)}
+@keyframes tape{to{transform:translateX(-50%)}}
+
+/* ───────── section heads ───────── */
+.sh{padding:112px 48px 56px;border-bottom:1px solid var(--line)}
+.sh h2{font-size:clamp(40px,6.2vw,88px);line-height:.95;letter-spacing:-.055em;font-weight:600;text-wrap:balance}
+.sh h2 em.s{color:var(--lime)}
+
+/* ───────── bento ───────── */
+.bento{grid-template-columns:repeat(12,1fr)}
+.s4{grid-column:span 4}.s5{grid-column:span 5}.s7{grid-column:span 7}
+.cell{position:relative;display:flex;flex-direction:column;--vbg:color-mix(in srgb,var(--a) 7%,#08080b)}
+.cell::before{content:"";position:absolute;top:-1px;left:0;width:0;height:3px;background:var(--a);z-index:2;transition:width .5s var(--ease)}
+.cell:hover::before,.cell.flash::before{width:100%}
+.cell header{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:28px 28px 0}
+.cell h3{font:600 38px/1 var(--mono);letter-spacing:-.06em;transition:color .3s}
+.cell:hover h3,.cell.flash h3{color:var(--a)}
+.cell header s{font:500 15px/1 var(--mono);color:var(--dim);text-decoration-color:var(--a)}
+.cell>p{padding:12px 28px 26px;color:var(--mut);font-size:15px;text-wrap:pretty}
+.viz{position:relative;flex:1;border-top:1px solid var(--line);overflow:hidden;font:12.5px/22px var(--mono);color:#dcdce2;
+  background:linear-gradient(color-mix(in srgb,var(--a) 9%,transparent) 1px,transparent 1px) -1px -1px/24px 24px,
+             linear-gradient(90deg,color-mix(in srgb,var(--a) 9%,transparent) 1px,transparent 1px) -1px -1px/24px 24px,var(--vbg)}
+.cell:hover{--vbg:color-mix(in srgb,var(--a) 12%,#08080b)}
+.viz pre{padding:24px 28px;font:inherit;overflow:hidden}
+.hl{background:var(--a);color:#000}
+
+.ins{display:flex;align-items:stretch;height:48px;border-top:1px solid var(--line);font:500 12.5px/1 var(--mono)}
+.ins button{flex:1;display:flex;align-items:center;gap:10px;padding:0 28px;min-width:0;white-space:nowrap;transition:background .2s,color .2s}
+.ins button>span{color:var(--a);transition:color .2s}
+.ins em,.one em{margin-left:auto;font-style:normal;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);transition:color .2s}
+.ins a{display:grid;place-items:center;width:48px;border-left:1px solid var(--line);color:var(--dim);transition:color .2s,background .2s}
+.ins a:hover{color:#000;background:var(--a)}
+.ins button:hover,.cell:hover .ins button{background:var(--a);color:#000}
+.ins button:hover>span,.ins button:hover em,.cell:hover .ins button>span,.cell:hover .ins em{color:#000}
+
+/* bat: the cursor drags a line between bat (left) and cat (right) */
+.wipe{--x:100%;cursor:ew-resize;touch-action:pan-y}
+.wipe .plain{color:var(--dim)}
+.wipe .rich{position:absolute;inset:0;background:inherit;clip-path:inset(0 calc(100% - var(--x)) 0 0);transition:clip-path .18s var(--ease)}
+.wipe .scan{position:absolute;top:0;bottom:0;left:var(--x);width:2px;margin-left:-1px;background:var(--a);box-shadow:0 0 24px 4px var(--a);opacity:0;transition:opacity .2s,left .18s var(--ease)}
+.wipe:hover .scan{opacity:1}
+.wipe::before,.wipe::after{position:absolute;bottom:14px;z-index:2;padding:0 8px;font-size:11px;line-height:20px;opacity:0;transition:opacity .2s}
+.wipe::before{content:"bat";left:28px;background:var(--a);color:#000}
+.wipe::after{content:"cat";right:28px;border:1px solid var(--dim);color:var(--mut)}
+.wipe:hover::before,.wipe:hover::after{opacity:1}
+
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0 28px 24px;font-size:11.5px;color:var(--dim)}
+.chips s{padding:1px 8px;border:1px dashed var(--dim);text-decoration-color:var(--a)}
+.huge{display:block;font:600 46px/1.1 var(--mono);letter-spacing:-.06em;color:var(--a);margin:6px 0 10px}
+.rule{display:block;margin:8px 0;padding:5px 10px;background:var(--a);color:#000;font-weight:500}
+
+/* bar rows */
+.bars{padding:0 28px 24px}
+.bar{display:grid;align-items:center;gap:12px;height:28px;white-space:nowrap}
+.bar span{overflow:hidden;text-overflow:ellipsis}
+.bar i{display:block;height:14px;background:#2c2c35;transform-origin:left}
+.cell:hover .bar i,.pv .bar i{animation:grow .7s var(--ease) both}
+@keyframes grow{from{transform:scaleX(0)}}
+.bar.top i{background:var(--a)}
+.bar.top span:first-child{color:#fff}
+.bar em{font-style:normal;color:var(--dim);text-align:right}
+.z .bar{grid-template-columns:minmax(0,1fr) 34% 3ch}
+.du .bar{grid-template-columns:4ch 12ch minmax(0,1fr) 3ch}
+.du .bar:nth-child(1) i{background:var(--red)}.du .bar:nth-child(2) i,.du .bar:nth-child(3) i{background:var(--yellow)}.du .bar:nth-child(n+4) i{background:var(--green)}
+.hf .bar{grid-template-columns:minmax(0,1fr) 46%}
+.hf .bar:first-child i{background:#4a4a56}
+.bt .bar{grid-template-columns:4ch minmax(0,1fr) 4ch}
+.x{display:flex;align-items:baseline;gap:12px;padding:0 28px 24px;color:var(--mut)}
+.x b{font:600 64px/1 var(--sans);letter-spacing:-.06em;color:var(--a)}
+
+/* delta: two panes */
+.split{display:grid;grid-template-columns:1fr 1fr}
+.split pre+pre{border-left:1px solid color-mix(in srgb,var(--a) 25%,transparent)}
+.split pre{padding-inline:0}
+.split pre>span{display:block;padding:0 20px}
+.rm{background:rgba(255,95,87,.16)}.ad{background:rgba(74,222,128,.14)}
+.rm b{background:#a8322c;color:#fff;font-weight:400}.ad b{background:#1f8a47;color:#fff;font-weight:400}
+.fname{padding:20px 28px 0;color:var(--a)}
+
+/* lazygit panels */
+.lg{display:grid;grid-template-columns:2fr 3fr;gap:14px 10px;padding:22px 18px 6px}
+.pn{position:relative;border:1px solid #3a3a44;padding:10px 12px 6px;white-space:pre;min-width:0}
+.pn::before{content:attr(data-t);position:absolute;top:-11px;left:8px;padding:0 5px;background:#08080b;color:var(--a);font-size:11px}
+.pn.on{border-color:var(--a)}
+.lg .pn:last-child{grid-column:2;grid-row:1/3}
+
+/* the same pictures, re-used inside the fzf preview */
+.pv{flex:1;border:0;background:none;min-width:0}
+.pv pre{padding:16px 18px}
+.pv .bars,.pv .chips,.pv .x{padding-inline:18px}
+.pv .fname{padding:16px 18px 0}
+.pv .rich{position:static;clip-path:none}
+.pv .split{grid-template-columns:1fr}
+.pv .split pre{padding-block:10px 0}
+.pv .split pre>span{padding:0 18px}
+.pv .huge{font-size:40px}
+.pv .x b{font-size:52px}
+
+/* ───────── more ───────── */
+.mrow{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:center;gap:32px;min-height:124px;padding:20px 48px;border-bottom:1px solid var(--line);background:var(--bg);transition:color .25s}
+.mrow:last-child{border-bottom:0}
+.mrow::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--a);transform:scaleY(0);transform-origin:bottom;transition:transform .4s var(--ease)}
+.mrow:hover::before,.mrow.flash::before{transform:scaleY(1)}
+.mrow:hover,.mrow.flash{color:#000}
+.mrow b{font:600 clamp(40px,5.4vw,72px)/1 var(--mono);letter-spacing:-.07em;transition:transform .4s var(--ease)}
+.mrow:hover b{transform:translateX(14px)}
+.mrow p{color:var(--mut);max-width:36ch;transition:color .25s}
+.mrow button{font:500 13px/1 var(--mono);padding:14px 16px;border:1px solid var(--line);white-space:nowrap;transition:border-color .25s,background .25s,color .25s}
+.mrow:hover p,.mrow.flash p{color:#000}
+.mrow:hover button,.mrow.flash button{border-color:#000;background:#000;color:var(--a)}
+
+/* ───────── install ───────── */
+.cta-block{background:var(--lime);color:#08080b;padding:104px 48px 96px;position:relative;overflow:hidden}
+.cta-block::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(rgba(0,0,0,.09) 1px,transparent 1px) -1px -1px/48px 48px,linear-gradient(90deg,rgba(0,0,0,.09) 1px,transparent 1px) -1px -1px/48px 48px}
+.cta-block>*{position:relative}
+.cta-block h2{font-size:clamp(44px,8.4vw,120px);line-height:.9;letter-spacing:-.06em;font-weight:600}
+.one{display:flex;align-items:stretch;width:100%;margin-top:56px;background:#08080b;color:var(--ink);box-shadow:12px 12px 0 rgba(0,0,0,.28);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.one:hover{transform:translate(-4px,-4px);box-shadow:16px 16px 0 rgba(0,0,0,.28)}
+.one code{flex:1;padding:28px 32px;font-size:clamp(13px,1.35vw,17px);line-height:1.8;word-break:break-word}
+.one em{display:grid;place-items:center;margin:0;padding:0 32px;border-left:1px solid #26262d;color:var(--lime);font-size:12px}
+.setup{grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.step{padding:36px 32px 40px}
+.step h4{font-size:19px;font-weight:500;letter-spacing:-.02em;color:var(--mut)}
+.step h4 b{font:600 1em var(--mono);color:var(--a);margin-right:.4em}
+.step button{display:flex;align-items:center;gap:16px;width:100%;margin-top:20px;padding:14px 16px;border:1px solid var(--line);font:12.5px/1.5 var(--mono);color:var(--ink);transition:border-color .2s}
+.step button:hover{border-color:var(--a)}
+.step code{flex:1;min-width:0;overflow-wrap:anywhere}
+.step em{font-style:normal;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.done em{color:var(--a)!important}
+.one.done em{color:#fff!important}
+
+/* ───────── footer ───────── */
+footer{position:relative;overflow:hidden}
+.foot{padding:28px 32px;font:500 11px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.foot a:hover{color:var(--lime)}
+.word{display:block;margin:0 0 -.3em;text-align:center;font:600 27vw/0.8 var(--mono);letter-spacing:-.08em;color:var(--bg);-webkit-text-stroke:2px var(--line);paint-order:stroke fill;user-select:none;transition:-webkit-text-stroke-color .4s}
+@media (min-width:1312px){.word{font-size:354px}}
+footer:hover .word{-webkit-text-stroke-color:var(--lime)}
+
+/* ───────── responsive ───────── */
+@media (max-width:1080px){
+  .stage{grid-template-columns:1fr}
+  .stage-l{border-right:0;border-bottom:1px solid var(--line)}
+  @supports (font-size:1cqi){h1{font-size:min(22cqi,128px)}}
+  .lede{max-width:34ch}
+  .bento{grid-template-columns:1fr}
+  .s4,.s5,.s7{grid-column:auto}
+  .setup{grid-template-columns:1fr}
+  .mrow{grid-template-columns:minmax(0,1fr) auto;gap:12px 24px}
+  .mrow p{grid-column:1/-1;grid-row:2;max-width:none}
+}
+@media (max-width:720px){
+  .nav nav a:not(.cta){display:none}
+  .logo{padding:0 16px}
+  .stage-l{padding:36px 20px 40px}
+  @supports (font-size:1cqi){h1{font-size:25cqi}}
+  .lede{padding-top:32px;font-size:17px}
+  .stage-r{padding:24px 12px 28px}
+  .win{box-shadow:none;font-size:13px}
+  .fzf{grid-template-columns:1fr}
+  .fzf-rows{height:130px;overflow-y:auto;scrollbar-width:none}
+  .fzf-p{border-left:0;border-top:1px solid #26262d}
+  .pv-b{height:300px}
+  .tape{height:72px}.tape div{font-size:34px;gap:24px;padding-right:24px}
+  .sh{padding:72px 20px 36px}
+  .cell header{padding:24px 20px 0}
+  .cell h3{font-size:32px}
+  .cell>p{padding:10px 20px 22px}
+  .viz pre{padding:20px}
+  .viz{font-size:11.5px}
+  .chips,.bars,.x,.fname{padding-inline:20px}
+  .split{grid-template-columns:1fr}
+  .split pre+pre{border-left:0;padding-top:0}
+  .split pre:first-child{padding-bottom:0}
+  .ins button{padding:0 20px}
+  .mrow{padding:24px 20px;grid-template-columns:minmax(0,1fr)}
+  .mrow button{justify-self:start}
+  .cta-block{padding:64px 20px 60px}
+  .one{flex-direction:column;box-shadow:6px 6px 0 rgba(0,0,0,.28);margin-top:36px}
+  .one code{padding:20px}
+  .one em{padding:14px 20px;border-left:0;border-top:1px solid #26262d;justify-content:start}
+  .step{padding:28px 20px 32px}
+  .foot{padding:24px 20px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .js .rv{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="nav">
+  <a class="logo" href="#top"><i></i>cellar</a>
+  <nav>
+    <a href="#top" id="find">Search <kbd>/</kbd></a>
+    <a href="#tools">Tools</a>
+    <a class="cta" href="#install">Install →</a>
+  </nav>
+</header>
+
+<!-- ═════ hero: the headline and a working fzf drive each other ═════ -->
+<section class="sec stage" id="top">
+  <div class="stage-l">
+    <h1 aria-label="Forget cat. Type bat.">
+      <span aria-hidden="true">Forget</span>
+      <span class="slot old" id="hOld" aria-hidden="true"><i>ctrl-r.</i></span>
+      <span aria-hidden="true">Type</span>
+      <span class="slot new" id="hNew" aria-hidden="true"><i>fzf.</i></span>
+    </h1>
+    <p class="lede">Sixteen command-line upgrades, each explained with a picture.</p>
+    <a class="btn" href="#install">Install all sixteen →</a>
+  </div>
+  <div class="stage-r" id="field">
+    <div class="mosaic"></div>
+    <div class="win" id="fz">
+      <div class="win-bar"><i></i><i></i><i></i><span>fzf --preview</span><span>↑↓ move · ↵ open</span></div>
+      <div class="fzf">
+        <div class="fzf-l">
+          <label class="fzf-q"><span class="pr">&gt;</span><input id="q" type="text" placeholder="type to filter" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Filter the tools"></label>
+          <div class="fzf-n"><span><b id="cnt">16</b>/16</span></div>
+          <div class="fzf-rows" id="rows" role="listbox" aria-label="Tools"></div>
+        </div>
+        <div class="fzf-p">
+          <div class="pv-h"><b id="pvName">fzf</b><span id="pvTag"></span></div>
+          <div class="pv-b" id="pvBody"></div>
+          <div class="pv-f">
+            <button type="button" data-copy><span class="pr">$</span><code id="pvCode">brew install fzf</code><em>copy</em></button>
+            <a id="pvOpen" href="#tools" hidden>open ↵</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- pictures for tools that have no card of their own -->
+<template id="demo-fzf">
+<pre><span class="d"># you're using it right now</span>
+
+<span class="pr">Ctrl-R</span>   search your shell history
+<span class="pr">Ctrl-T</span>   paste a file path
+<span class="pr">Alt-C</span>    cd into a subdirectory
+<span class="pr">**⇥</span>      fuzzy-complete any argument
+
+<span class="d"># or pipe anything into it</span>
+<span class="pr">$</span> git branch | <span class="w">fzf</span> | xargs git switch</pre>
+</template>
+<template id="demo-btop">
+<pre><span class="pr">$</span> <span class="w">btop</span></pre>
+<div class="bars bt">
+  <div class="bar"><span class="d">cpu0</span><i style="width:62%"></i><em>62%</em></div>
+  <div class="bar"><span class="d">cpu1</span><i style="width:34%"></i><em>34%</em></div>
+  <div class="bar top"><span>cpu2</span><i style="width:91%"></i><em>91%</em></div>
+  <div class="bar"><span class="d">cpu3</span><i style="width:12%"></i><em>12%</em></div>
+  <div class="bar"><span class="d">mem</span><i style="width:58%"></i><em>58%</em></div>
+  <div class="bar"><span class="d">disk</span><i style="width:44%"></i><em>44%</em></div>
+</div>
+<pre style="padding-top:0"><span class="d">PID    PROGRAM      CPU%   MEM</span>
+<span class="pr">4182</span>   bun          88.4   412M
+<span class="d">911</span>    postgres      6.1   230M</pre>
+</template>
+<template id="demo-lazygit">
+<div class="lg">
+  <div class="pn on" data-t="Files"><span class="y">M</span> src/lib/db.ts
+<span class="y">M</span> package.json
+<span class="r">?</span> deploy.sh</div>
+  <div class="pn" data-t="Branches"><span class="g">*</span> main
+  feat/cache
+  fix/pool</div>
+  <div class="pn" data-t="Diff"><span class="c">@@ -12,4 +12,4 @@</span>
+ const pool = createPool({
+<span class="r">-  max: 5,</span>
+<span class="g">+  max: 20,</span>
+   idleTimeout: 30_000,
+<span class="r">-  ssl: false,</span>
+<span class="g">+  ssl: true,</span>
+ });</div>
+</div>
+<pre><span class="pr">space</span> stage  <span class="pr">c</span> commit  <span class="pr">p</span> pull  <span class="pr">P</span> push</pre>
+</template>
+<template id="demo-gh">
+<pre><span class="pr">$</span> <span class="w">gh</span> pr list
+<span class="g">#131</span>  Fix connection pool leak   <span class="c">fix/pool</span>
+<span class="g">#128</span>  Add rate limiting          <span class="c">feat/limit</span>
+<span class="g">#124</span>  Bump bun to 1.2            <span class="c">chore/bun</span>
+
+<span class="pr">$</span> <span class="w">gh</span> pr checkout 131
+<span class="pr">$</span> <span class="w">gh</span> pr checks
+<span class="g">✓</span> build   <span class="g">✓</span> test   <span class="g">✓</span> lint</pre>
+</template>
+<template id="demo-atuin">
+<pre><span class="d">search:</span> <span class="w">docker</span><span class="caret"></span>
+
+<span class="pr">▌</span><span class="d"> 2m ago</span>  <span class="w">docker compose up -d</span>
+ <span class="d"> 1h ago</span>  docker logs -f api
+ <span class="d"> 3d ago</span>  docker system prune -af
+ <span class="d"> 2w ago</span>  docker build -t api .
+
+<span class="d"># every shell, every machine, one history</span></pre>
+</template>
+<template id="demo-starship">
+<pre><span class="c">~/code/api</span> on <span class="p">main</span> <span class="r">[!?]</span> via <span class="g">node v22.4</span> took <span class="y">3s</span>
+<span class="g">❯</span> bun test
+
+<span class="c">~/code/api</span> on <span class="p">main</span> <span class="r">[!?]</span> via <span class="g">node v22.4</span>
+<span class="r">❯</span> <span class="caret"></span>
+
+<span class="d"># a red ❯ means the last command failed</span></pre>
+</template>
+
+<!-- ═════ tape ═════ -->
+<div class="sec tape" aria-hidden="true">
+  <div>
+    <span>fzf</span><u>✳</u><span>bat</span><u>✳</u><span>ripgrep</span><u>✳</u><span>fd</span><u>✳</u><span>eza</span><u>✳</u><span>zoxide</span><u>✳</u><span>jq</span><u>✳</u><span>delta</span><u>✳</u><span>tldr</span><u>✳</u><span>dust</span><u>✳</u><span>hyperfine</span><u>✳</u><span>btop</span><u>✳</u><span>lazygit</span><u>✳</u><span>gh</span><u>✳</u><span>atuin</span><u>✳</u><span>starship</span><u>✳</u>
+    <span>fzf</span><u>✳</u><span>bat</span><u>✳</u><span>ripgrep</span><u>✳</u><span>fd</span><u>✳</u><span>eza</span><u>✳</u><span>zoxide</span><u>✳</u><span>jq</span><u>✳</u><span>delta</span><u>✳</u><span>tldr</span><u>✳</u><span>dust</span><u>✳</u><span>hyperfine</span><u>✳</u><span>btop</span><u>✳</u><span>lazygit</span><u>✳</u><span>gh</span><u>✳</u><span>atuin</span><u>✳</u><span>starship</span><u>✳</u>
+  </div>
+</div>
+
+<!-- ═════ bento ═════ -->
+<section class="sec" id="tools">
+  <div class="sh"><h2 class="rv">Ten upgrades,<br><em class="s">one picture each.</em></h2></div>
+
+  <div class="grid bento">
+
+    <article class="cell s7 rv" id="bat" style="--a:var(--orange)">
+      <header><h3>bat</h3><s>cat</s></header>
+      <p>Prints a file the way your editor shows it.</p>
+      <div class="viz wipe">
+<pre class="plain">$ cat server.ts
+
+import { serve } from "bun";
+import { app } from "./app";
+
+const port = Number(process.env.PORT ?? 3000);
+
+serve({ port, fetch: app });
+console.log(`listening on :${port}`);</pre>
+<pre class="rich"><span class="pr">$</span> <span class="w">bat</span> server.ts
+<span class="d">───┬──────────────────────────────────────────────────</span>
+<span class="d"> 1 │</span>   <span class="p">import</span> { serve } <span class="p">from</span> <span class="g">"bun"</span>;
+<span class="d"> 2 │</span> <span class="g">+</span> <span class="p">import</span> { app } <span class="p">from</span> <span class="g">"./app"</span>;
+<span class="d"> 3 │</span>
+<span class="d"> 4 │</span> <span class="y">~</span> <span class="p">const</span> <span class="b">port</span> = <span class="c">Number</span>(process.env.<span class="b">PORT</span> ?? <span class="y">3000</span>);
+<span class="d"> 5 │</span>
+<span class="d"> 6 │</span> <span class="g">+</span> <span class="c">serve</span>({ port, fetch: app });
+<span class="d"> 7 │</span>   console.<span class="c">log</span>(<span class="g">`listening on :${</span>port<span class="g">}`</span>);</pre>
+        <i class="scan"></i>
+      </div>
+      <div class="ins"><button type="button" data-copy><span>$</span><code>brew install bat</code><em>copy</em></button><a href="https://github.com/sharkdp/bat" aria-label="bat on GitHub">↗</a></div>
+    </article>
+
+    <article class="cell s5 rv" id="rg" style="--a:var(--red)">
+      <header><h3>ripgrep</h3><s>grep</s></header>
+      <p>Searches a whole project, skipping what git ignores.</p>
+      <div class="viz">
+<pre><span class="pr">$</span> <span class="w">rg</span> TODO
+<span class="p">src/api/users.ts</span>
+<span class="g">12</span>:  // <span class="hl">TODO</span>: paginate results
+<span class="g">48</span>:  // <span class="hl">TODO</span>: cache this lookup
+
+<span class="p">src/lib/db.ts</span>
+<span class="g">7</span>:   // <span class="hl">TODO</span>: pool connections</pre>
+        <div class="chips">skipped <s>node_modules/</s><s>.git/</s><s>dist/</s></div>
+      </div>
+      <div class="ins"><button type="button" data-copy><span>$</span><code>brew install ripgrep</code><em>copy</em></button><a href="https://github.com/BurntSushi/ripgrep" aria-label="ripgrep on GitHub">↗</a></div>
+    </article>
+
+    <article class="cell s4 rv" id="fd" style="--a:var(--green)">
+      <header><h3>fd</h3><s>find</s></header>
+      <p>Finds files without the incantation.</p>
+      <div class="viz">
+<pre><span class="d"><s>find . -type f -name "*.md" \
+  -not -path "./node_modules/*"</s></span>
+<span class="huge">fd -e md</span>README.md
+<span class="b">docs/</span>setup.md
+<span class="b">docs/api/</span>auth.md</pre>
+      </div>
+      <div class="ins"><button type="button" data-copy><span>$</span><code>brew install fd</code><em>copy</em></button><a href="https://github.com/sharkdp/fd" aria-label="fd on GitHub">↗</a></div>
+    </article>
+
+    <article class="cell s4 rv" id="eza" style="--a:var(--blue)">
+      <header><h3>eza</h3><s>ls</s></header>
+      <p>Listings with colour, sizes and git status.</p>
+      <div class="viz">
+<pre><span class="pr">$</span> <span class="w">eza</span> -l --git
+<span class="b">d</span><span class="y">r</span><span class="r">w</span><span class="g">x</span><span class="y">r</span>-<span class="g">x</span><span class="y">r</span>-<span class="g">x</span>    <span class="d">-</span> <span class="d">12 Oct 09:14</span> <span class="d">--</span> <span class="b">src</span>
+<span class="b">d</span><span class="y">r</span><span class="r">w</span><span class="g">x</span><span class="y">r</span>-<span class="g">x</span><span class="y">r</span>-<span class="g">x</span>    <span class="d">-</span> <span class="d">11 Oct 17:40</span> <span class="d">--</span> <span class="b">docs</span>
+.<span class="y">r</span><span class="r">w</span>-<span class="y">r</span>--<span class="y">r</span>-- <span class="g">1.2k</span> <span class="d">12 Oct 09:10</span> <span class="d">-</span><span class="y">M</span> package.json
+.<span class="y">r</span><span class="r">w</span>-<span class="y">r</span>--<span class="y">r</span>--  <span class="g">847</span> <span class="d">11 Oct 17:02</span> <span class="d">--</span> README.md
+.<span class="y">r</span><span class="r">w</span><span class="g">x</span><span class="y">r</span>-<span class="g">x</span><span class="y">r</span>-<span class="g">x</span>  <span class="g">312</span> <span class="d">10 Oct 08:45</span> <span class="g">N</span><span class="d">-</span> <span class="g">deploy.sh</span></pre>
+      </div>
+      <div class="ins"><button type="button" data-copy><span>$</span><code>brew install eza</code><em>copy</em></button><a href="https://github.com/eza-community/eza" aria-label="eza on GitHub">↗</a></div>
+    </article>
+
+    <article class="cell s4 rv" id="zoxide" style="--a:var(--violet)">
+      <header><h3>zoxide</h3><s>cd</s></header>
+      <p>Jumps to a directory from a fragment of its name.</p>
+      <div class="viz z">
+<pre><span class="d">~</span> <span class="pr">$</span> <span class="w">z</span> dot</pre>
+        <div class="bars">
+          <div class="bar top"><span>~/code/dotfiles</span><i style="width:100%"></i><em>148</em></div>
+          <div class="bar"><span class="d">~/work/dot-matrix</span><i style="width:28%"></i><em>41</em></div>
+          <div class="bar"><span class="d">~/Downloads/dotnet</span><i style="width:5%"></i><em>6</em></div>
+        </div>
+<pre style="padding-top:0"><span class="pr">~/code/dotfiles</span> <span class="pr">$</span> <span class="caret"></span></pre>
+      </div>
+      <div class="ins"><button type="button" data-copy><span>$</span><code>brew install zoxide</code><em>copy</em></button><a href="https://github.com/ajeetdsouza/zoxide" aria-label="zoxide on GitHub">↗</a></div>
+    </article>
+
+    <article class="cell s5 rv" id="jq" style="--a:var(--yellow)">
+      <header><h3>jq</h3><s>awk</s></header>
+      <p>Filters and reshapes JSON in a pipe.</p>
+      <div class="viz">
+<pre><span class="d">[{<span class="b">"name"</span>:<span class="g">"ana"</span>, <span class="b">"admin"</span>:<span class="o">true</span>},
+ {<span class="b">"name"</span>:<span class="g">"kai"</span>, <span class="b">"admin"</span>:<span class="o">false</span>},
+ {<span class="b">"name"</span>:<span class="g">"noor"</span>,<span class="b">"admin"</span>:<span class="o">true</span>}]</span>
+<span class="rule">↓  jq '.[] | select(.admin) | .name'</span><span class="g">"ana"</span>
+<span class="g">"noor"</span></pre>
+      </div>
+      <div class="ins"><button type="button" data-copy><span>$</span><code>brew install jq</code><em>copy</em></button><a href="https://github.com/jqlang/jq" aria-label="jq on GitHub">↗</a></div>
+    </article>
+
+    <article class="cell s7 rv" id="delta" style="--a:var(--teal)">
+      <header><h3>delta</h3><s>diff</s></header>
+      <p>Git diffs with syntax colours and the changed words picked out.</p>
+      <div class="viz">
+        <div class="fname">Δ src/lib/db.ts</div>
+        <div class="split">
+<pre><span><span class="d">12 │</span> <span class="p">const</span> pool = <span class="c">createPool</span>({</span><span class="rm"><span class="d">13 │</span>   max: <b>5</b>,</span><span><span class="d">14 │</span>   idleTimeout: <span class="y">30_000</span>,</span><span class="rm"><span class="d">15 │</span>   ssl: <b>false</b>,</span><span><span class="d">16 │</span> });</span></pre>
+<pre><span><span class="d">12 │</span> <span class="p">const</span> pool = <span class="c">createPool</span>({</span><span class="ad"><span class="d">13 │</span>   max: <b>20</b>,</span><span><span class="d">14 │</span>   idleTimeout: <span class="y">30_000</span>,</span><span class="ad"><span class="d">15 │</span>   ssl: <b>true</b>,</span><span><span class="d">16 │</span> });</span></pre>
+        </div>
+      </div>
+      <div class="ins"><button type="button" data-copy><span>$</span><code>brew install git-delta</code><em>copy</em></button><a href="https://github.com/dandavison/delta" aria-label="delta on GitHub">↗</a></div>
+    </article>
+
+    <article class="cell s4 rv" id="tldr" style="--a:var(--cyan)">
+      <header><h3>tldr</h3><s>man</s></header>
+      <p>Examples first. The manual never.</p>
+      <div class="viz">
+<pre><span class="pr">$</span> <span class="w">tldr</span> tar
+
+<span class="d">Extract an archive:</span>
+  <span class="c">tar xf</span> <span class="y">archive.tar</span>
+
+<span class="d">Create a gzipped archive:</span>
+  <span class="c">tar czf</span> <span class="y">out.tar.gz dir/</span>
+
+<span class="d">List what's inside:</span>
+  <span class="c">tar tvf</span> <span class="y">archive.tar</span></pre>
+      </div>
+      <div class="ins"><button type="button" data-copy><span>$</span><code>brew install tealdeer</code><em>copy</em></button><a href="https://github.com/tealdeer-rs/tealdeer" aria-label="tealdeer on GitHub">↗</a></div>
+    </article>
+
+    <article class="cell s4 rv" id="dust" style="--a:var(--pink)">
+      <header><h3>dust</h3><s>du</s></header>
+      <p>Shows what is eating your disk.</p>
+      <div class="viz du">
+<pre><span class="pr">$</span> <span class="w">dust</span> -d 1</pre>
+        <div class="bars">
+          <div class="bar"><span class="r">1.8G</span><span>node_modules</span><i style="width:100%"></i><em>71%</em></div>
+          <div class="bar"><span class="y">412M</span><span>.git</span><i style="width:23%"></i><em>16%</em></div>
+          <div class="bar"><span class="y">210M</span><span>dist</span><i style="width:11%"></i><em>8%</em></div>
+          <div class="bar"><span class="g"> 96M</span><span>src</span><i style="width:6%"></i><em>4%</em></div>
+          <div class="bar"><span class="g"> 12M</span><span>docs</span><i style="width:1.5%"></i><em>1%</em></div>
+        </div>
+      </div>
+      <div class="ins"><button type="button" data-copy><span>$</span><code>brew install dust</code><em>copy</em></button><a href="https://github.com/bootandy/dust" aria-label="dust on GitHub">↗</a></div>
+    </article>
+
+    <article class="cell s4 rv" id="hyperfine" style="--a:var(--lime)">
+      <header><h3>hyperfine</h3><s>time</s></header>
+      <p>Benchmarks commands with real statistics.</p>
+      <div class="viz hf">
+<pre><span class="pr">$</span> <span class="w">hyperfine</span> './build.sh' './build.sh --cache'</pre>
+        <div class="bars">
+          <div class="bar"><span>build.sh <span class="d">4.21 s ± 0.08</span></span><i style="width:100%"></i></div>
+          <div class="bar top"><span>--cache <span class="d">1.13 s ± 0.03</span></span><i style="width:27%"></i></div>
+        </div>
+        <div class="x"><b>3.73×</b><span>faster</span></div>
+      </div>
+      <div class="ins"><button type="button" data-copy><span>$</span><code>brew install hyperfine</code><em>copy</em></button><a href="https://github.com/sharkdp/hyperfine" aria-label="hyperfine on GitHub">↗</a></div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ═════ more ═════ -->
+<section class="sec" id="more">
+  <div class="sh"><h2 class="rv">Then go <em class="s">deeper.</em></h2></div>
+  <div>
+    <div class="mrow rv" id="btop" style="--a:var(--cyan)"><b>btop</b><p>A system monitor with live graphs.</p><button type="button" data-copy><code>brew install btop</code></button></div>
+    <div class="mrow rv" id="lazygit" style="--a:var(--orange)"><b>lazygit</b><p>All of git behind single keystrokes.</p><button type="button" data-copy><code>brew install lazygit</code></button></div>
+    <div class="mrow rv" id="gh" style="--a:var(--violet)"><b>gh</b><p>Pull requests, reviews and CI without the browser.</p><button type="button" data-copy><code>brew install gh</code></button></div>
+    <div class="mrow rv" id="atuin" style="--a:var(--pink)"><b>atuin</b><p>Searchable shell history, synced across machines.</p><button type="button" data-copy><code>brew install atuin</code></button></div>
+    <div class="mrow rv" id="starship" style="--a:var(--yellow)"><b>starship</b><p>A fast prompt that shows branch, versions and failures.</p><button type="button" data-copy><code>brew install starship</code></button></div>
+  </div>
+</section>
+
+<!-- ═════ install ═════ -->
+<section class="sec" id="install">
+  <div class="cta-block">
+    <h2>Sixteen tools.<br><em class="s">One line.</em></h2>
+    <button type="button" class="one" data-copy><code>brew install fzf bat ripgrep fd eza zoxide jq git-delta tealdeer dust hyperfine btop lazygit gh atuin starship</code><em>copy</em></button>
+  </div>
+  <div class="grid setup">
+    <div class="step" style="--a:var(--lime)">
+      <h4><b>fzf</b>needs its key bindings</h4>
+      <button type="button" data-copy><code>echo 'source &lt;(fzf --zsh)' &gt;&gt; ~/.zshrc</code><em>copy</em></button>
+    </div>
+    <div class="step" style="--a:var(--violet)">
+      <h4><b>zoxide</b>needs a shell hook</h4>
+      <button type="button" data-copy><code>echo 'eval "$(zoxide init zsh)"' &gt;&gt; ~/.zshrc</code><em>copy</em></button>
+    </div>
+    <div class="step" style="--a:var(--teal)">
+      <h4><b>delta</b>needs to be git's pager</h4>
+      <button type="button" data-copy><code>git config --global core.pager delta</code><em>copy</em></button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">Unofficial · not affiliated with <a href="https://brew.sh">Homebrew ↗</a></div>
+  <span class="word" aria-hidden="true">cellar</span>
+</footer>
+
+</div>
+
+<script>
+(() => {
+  const $ = (s, el = document) => el.querySelector(s);
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── the sixteen tools: say = what you type, old = what it retires ── */
+  const TOOLS = [
+    { id: 'fzf',       old: 'ctrl-r',  a: 'lime',   tag: 'fuzzy-find anything' },
+    { id: 'bat',       old: 'cat',     a: 'orange', tag: 'files with syntax colours' },
+    { id: 'rg',        old: 'grep',    a: 'red',    tag: 'search a whole project', name: 'ripgrep', say: 'rg' },
+    { id: 'fd',        old: 'find',    a: 'green',  tag: 'find files, sanely' },
+    { id: 'eza',       old: 'ls',      a: 'blue',   tag: 'listings with git status' },
+    { id: 'zoxide',    old: 'cd',      a: 'violet', tag: 'jump to any directory', say: 'z' },
+    { id: 'jq',        old: 'awk',     a: 'yellow', tag: 'query JSON' },
+    { id: 'delta',     old: 'diff',    a: 'teal',   tag: 'readable git diffs', brew: 'git-delta' },
+    { id: 'tldr',      old: 'man',     a: 'cyan',   tag: 'examples, not manuals', brew: 'tealdeer' },
+    { id: 'dust',      old: 'du',      a: 'pink',   tag: 'disk usage as bars' },
+    { id: 'hyperfine', old: 'time',    a: 'lime',   tag: 'benchmark commands' },
+    { id: 'btop',      old: 'top',     a: 'cyan',   tag: 'system monitor' },
+    { id: 'lazygit',   old: 'git add', a: 'orange', tag: 'git with a UI' },
+    { id: 'gh',        old: 'tabs',    a: 'violet', tag: 'GitHub in the shell' },
+    { id: 'atuin',     old: 'history', a: 'pink',   tag: 'searchable shell history' },
+    { id: 'starship',  old: 'PS1',     a: 'yellow', tag: 'a prompt that tells you things' },
+  ];
+  TOOLS.forEach(t => { t.name ??= t.id; t.say ??= t.name; t.brew ??= t.name; });
+
+  const stage = $('.stage'), win = $('#fz'), rows = $('#rows'), q = $('#q'), cnt = $('#cnt');
+  const pvName = $('#pvName'), pvTag = $('#pvTag'), pvBody = $('#pvBody'), pvCode = $('#pvCode'), pvOpen = $('#pvOpen');
+  const hOld = $('#hOld'), hNew = $('#hNew');
+
+  let list = [], sel = 0, touched = false, hovering = false, visible = true;
+
+  /* subsequence match; consecutive hits and a hit on the first letter score higher */
+  function fuzzy(needle, hay) {
+    needle = needle.toLowerCase(); hay = hay.toLowerCase();
+    const pos = []; let score = 0, last = -2, i = 0;
+    for (let j = 0; j < hay.length && i < needle.length; j++) {
+      if (hay[j] !== needle[i]) continue;
+      score += (j === last + 1 ? 3 : 1) + (j === 0 ? 4 : 0);
+      pos.push(j); last = j; i++;
+    }
+    return i === needle.length ? { pos, score: score - pos[0] * 0.1 - hay.length * 0.01 } : null;
+  }
+
+  /* each tool's picture: its own template, or a copy of its card's picture */
+  const demos = new Map();
+  function demo(t) {
+    if (demos.has(t.id)) return demos.get(t.id);
+    const box = document.createElement('div');
+    const tpl = document.getElementById('demo-' + t.id);
+    if (tpl) {
+      box.className = 'viz pv';
+      box.append(tpl.content.cloneNode(true));
+    } else {
+      const src = $('#' + t.id + ' .viz');
+      box.className = src.className.replace('wipe', '') + ' pv';
+      src.childNodes.forEach(n => box.append(n.cloneNode(true)));
+      box.querySelectorAll('.plain,.scan').forEach(n => n.remove());
+    }
+    demos.set(t.id, box);
+    return box;
+  }
+
+  /* slide one headline word out and the next one in */
+  function word(slot, text) {
+    const kids = [...slot.children], cur = kids.pop();
+    kids.forEach(k => k.remove());
+    if (cur.textContent === text) return;
+    const next = document.createElement('i');
+    next.textContent = text;
+    if (!calm) { next.className = 'in'; cur.className = 'out'; slot.append(next); setTimeout(() => cur.remove(), 520); }
+    else cur.replaceWith(next);
+  }
+
+  function show() {
+    [...rows.children].forEach((r, i) => {
+      r.classList.toggle('sel', i === sel);
+      r.setAttribute('aria-selected', i === sel);
+    });
+    const hit = list[sel];
+    if (!hit) return;
+    const t = hit.t;
+    stage.style.setProperty('--a', `var(--${t.a})`);
+    word(hOld, t.old + '.');
+    word(hNew, t.say + '.');
+    pvName.textContent = t.name;
+    pvTag.textContent = t.tag;
+    pvCode.textContent = 'brew install ' + t.brew;
+    pvOpen.href = '#' + t.id;
+    pvOpen.hidden = t.id === 'fzf';
+    pvBody.replaceChildren(demo(t));
+    const r = rows.children[sel];
+    if (r && rows.scrollHeight > rows.clientHeight) {
+      const top = r.offsetTop - rows.offsetTop;
+      if (top < rows.scrollTop) rows.scrollTop = top;
+      else if (top + r.offsetHeight > rows.scrollTop + rows.clientHeight) rows.scrollTop = top + r.offsetHeight - rows.clientHeight;
+    }
+  }
+
+  function render() {
+    const s = q.value.trim();
+    if (!s) list = TOOLS.map(t => ({ t, pos: [] }));
+    else list = TOOLS.map((t, i) => {
+      let m = fuzzy(s, t.name);
+      if (m) return { t, i, pos: m.pos, score: m.score + 10 };
+      m = fuzzy(s, `${t.say} ${t.old} ${t.tag}`);
+      return m && { t, i, pos: [], score: m.score };
+    }).filter(Boolean).sort((a, b) => b.score - a.score || a.i - b.i);
+
+    rows.innerHTML = list.length ? list.map(({ t, pos }, i) =>
+      `<div class="row" role="option" data-i="${i}"><span>${[...t.name].map((ch, k) => pos.includes(k) ? `<b>${ch}</b>` : ch).join('')}</span><s>${t.old}</s></div>`
+    ).join('') : '<div class="none">no match</div>';
+    cnt.textContent = list.length;
+    sel = 0;
+    show();
+  }
+
+  function move(d) {
+    if (!list.length) return;
+    sel = (sel + d + list.length) % list.length;
+    show();
+  }
+
+  function open() {
+    const t = list[sel]?.t;
+    if (!t || t.id === 'fzf') return;
+    const el = document.getElementById(t.id);
+    el.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'center' });
+    el.classList.add('in', 'flash');
+    setTimeout(() => el.classList.remove('flash'), 1600);
+  }
+
+  q.addEventListener('input', () => { touched = true; render(); });
+  q.addEventListener('keydown', e => {
+    const k = e.key, c = e.ctrlKey;
+    if (k === 'ArrowDown' || (c && (k === 'n' || k === 'j'))) { e.preventDefault(); touched = true; move(1); }
+    else if (k === 'ArrowUp' || (c && (k === 'p' || k === 'k'))) { e.preventDefault(); touched = true; move(-1); }
+    else if (k === 'Enter') { e.preventDefault(); open(); }
+    else if (k === 'Escape') { q.value ? (q.value = '', render()) : q.blur(); }
+  });
+  rows.addEventListener('click', e => {
+    const r = e.target.closest('.row');
+    if (!r) return;
+    touched = true;
+    const i = +r.dataset.i;
+    if (i === sel) open(); else { sel = i; show(); }
+  });
+  win.addEventListener('click', e => { if (!e.target.closest('a,button,.row')) q.focus({ preventScroll: true }); });
+  pvOpen.addEventListener('click', e => { e.preventDefault(); open(); });
+  win.addEventListener('pointerenter', () => hovering = true);
+  win.addEventListener('pointerleave', () => hovering = false);
+
+  function focusSearch(e) {
+    e.preventDefault();
+    scrollTo({ top: 0, behavior: calm ? 'auto' : 'smooth' });
+    q.focus({ preventScroll: true });
+  }
+  $('#find').addEventListener('click', focusSearch);
+  addEventListener('keydown', e => {
+    if (e.key === '/' && !e.metaKey && !e.ctrlKey && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) focusSearch(e);
+  });
+
+  /* until someone touches it, the list walks itself and the headline follows */
+  new IntersectionObserver(([e]) => visible = e.isIntersecting, { threshold: 0.2 }).observe(stage);
+  if (!calm) setInterval(() => {
+    if (!touched && !hovering && visible && !document.hidden && document.activeElement !== q) move(1);
+  }, 2600);
+
+  render();
+
+  /* ── light under the cursor on the pixel field ── */
+  const field = $('#field'), mosaic = $('.mosaic');
+  field.addEventListener('pointermove', e => {
+    const r = field.getBoundingClientRect();
+    mosaic.style.setProperty('--mx', e.clientX - r.left + 'px');
+    mosaic.style.setProperty('--my', e.clientY - r.top + 'px');
+  });
+  field.addEventListener('pointerleave', () => { mosaic.style.removeProperty('--mx'); mosaic.style.removeProperty('--my'); });
+
+  /* ── bat: drag the line between bat and cat ── */
+  document.querySelectorAll('.wipe').forEach(w => {
+    w.addEventListener('pointermove', e => w.style.setProperty('--x', e.clientX - w.getBoundingClientRect().left + 'px'));
+    w.addEventListener('pointerleave', () => w.style.removeProperty('--x'));
+  });
+
+  /* ── click any command to copy it ── */
+  document.addEventListener('click', async e => {
+    const b = e.target.closest('[data-copy]');
+    if (!b) return;
+    const text = $('code', b).textContent;
+    try { await navigator.clipboard.writeText(text); }
+    catch { const r = document.createRange(); r.selectNodeContents($('code', b)); getSelection().removeAllRanges(); getSelection().addRange(r); return; }
+    const label = $('em', b) || $('code', b), was = label.textContent;
+    if (b.classList.contains('done')) return;
+    b.classList.add('done');
+    label.textContent = 'copied';
+    setTimeout(() => { label.textContent = was; b.classList.remove('done'); }, 1400);
+  });
+
+  /* ── reveal on scroll, staggered across a row ── */
+  const io = new IntersectionObserver(entries => {
+    entries.filter(e => e.isIntersecting).forEach((e, i) => {
+      e.target.style.setProperty('--d', i * 70 + 'ms');
+      e.target.classList.add('in');
+      io.unobserve(e.target);
+    });
+  }, { rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+})();
+</script>
+</body>
+</html>
