@@ -6,6 +6,16 @@
 <title>Cellar — Homebrew CLI tools, explained in pictures</title>
 <meta name="description" content="The Homebrew command-line tools worth installing, each explained in one picture: fzf, bat, ripgrep, fd, eza, zoxide, jq, delta and more.">
 <meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#070709">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Cellar — Homebrew CLI tools, explained in pictures">
+<meta property="og:description" content="Forget cat. Type bat. Sixteen command-line upgrades, each explained with a picture.">
+<meta property="og:url" content="https://abhinav-prabhakar.github.io/Cellar/">
+<meta property="og:image" content="https://abhinav-prabhakar.github.io/Cellar/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="fonts/Geist.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/GeistMono.woff2" as="font" type="font/woff2" crossorigin>
 <script>document.documentElement.classList.add('js')</script>
@@ -16,7 +26,7 @@
 
 /* ───────── tokens ───────── */
 :root{
-  --bg:#070709; --ink:#f6f5f0; --mut:#a09fa9; --dim:#5b5a65; --line:#222229; --rail:#121216;
+  --bg:#070709; --ink:#f6f5f0; --mut:#a09fa9; --dim:#807f8b; --faint:#64636f; --line:#222229; --rail:#121216;
   --lime:#c8f542; --violet:#a070ff; --pink:#ff4f9a; --orange:#ff8a2a; --yellow:#ffd84a;
   --cyan:#3fd9e6; --blue:#5b9bff; --red:#ff5f57; --green:#4ade80; --teal:#2dd4bf;
   --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
@@ -69,7 +79,7 @@ em.s{font:italic 400 1.08em/1 var(--serif);letter-spacing:-.02em}
 .nav nav a:hover{color:var(--ink);background:#111116}
 .nav nav a.cta{background:var(--lime);color:#000}
 .nav nav a.cta:hover{background:#fff}
-kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border:1px solid var(--dim);font-size:11px;line-height:1;color:var(--mut)}
+kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border:1px solid var(--faint);font-size:11px;line-height:1;color:var(--mut)}
 
 /* ───────── hero ───────── */
 .stage{--a:var(--lime);display:grid;grid-template-columns:5fr 8fr}
@@ -84,7 +94,7 @@ h1>span:first-child{margin-top:-.1em}
 .slot .out{animation:out .5s var(--ease) both}
 @keyframes in{from{transform:translateY(105%)}}
 @keyframes out{to{transform:translateY(-105%)}}
-.slot.old{color:var(--dim)}
+.slot.old{color:var(--faint)}
 .slot.old i{justify-self:start;text-decoration:line-through;text-decoration-thickness:.055em;text-decoration-color:var(--pink)}
 .slot.new{color:var(--a);transition:color .3s}
 .lede{margin-top:auto;padding-top:48px;font-size:19px;line-height:1.45;color:var(--mut);max-width:26ch;text-wrap:pretty}
@@ -102,7 +112,7 @@ h1>span:first-child{margin-top:-.1em}
 
 .win{position:relative;width:100%;background:#08080b;border:1px solid #34343d;color:#dcdce2;font:13.5px/26px var(--mono);box-shadow:0 40px 100px -10px rgba(0,0,0,.9),14px 14px 0 rgba(0,0,0,.55)}
 .win-bar{display:flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-bottom:1px solid #26262d;color:var(--dim);font-size:11.5px}
-.win-bar i{width:9px;height:9px;border:1px solid var(--dim)}
+.win-bar i{width:9px;height:9px;border:1px solid var(--faint)}
 .win-bar i:first-child{background:var(--a);border-color:var(--a);transition:background .3s,border-color .3s}
 .win-bar span{margin-left:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .win-bar span+span{margin-left:auto}
@@ -128,7 +138,7 @@ h1>span:first-child{margin-top:-.1em}
 .pv-h{display:flex;align-items:baseline;gap:14px;padding:13px 18px 9px;border-bottom:1px solid #26262d;white-space:nowrap;overflow:hidden}
 .pv-h b{font-weight:600;font-size:15px;color:var(--a)}
 .pv-h span{color:var(--dim);overflow:hidden;text-overflow:ellipsis}
-.pv-b{flex:1;display:flex;min-height:0;overflow:hidden}
+.pv-b{flex:1;display:flex;min-height:0;overflow:hidden;touch-action:pan-y}
 .pv-f{display:flex;align-items:center;border-top:1px solid #26262d;height:44px;font-size:12.5px}
 .pv-f button{flex:1;display:flex;align-items:center;gap:1ch;height:100%;padding:0 18px;min-width:0;white-space:nowrap;transition:background .2s,color .2s}
 .pv-f button:hover{background:var(--a);color:#000}
@@ -185,11 +195,11 @@ h1>span:first-child{margin-top:-.1em}
 .wipe:hover .scan{opacity:1}
 .wipe::before,.wipe::after{position:absolute;bottom:14px;z-index:2;padding:0 8px;font-size:11px;line-height:20px;opacity:0;transition:opacity .2s}
 .wipe::before{content:"bat";left:28px;background:var(--a);color:#000}
-.wipe::after{content:"cat";right:28px;border:1px solid var(--dim);color:var(--mut)}
+.wipe::after{content:"cat";right:28px;border:1px solid var(--faint);color:var(--mut)}
 .wipe:hover::before,.wipe:hover::after{opacity:1}
 
 .chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0 28px 24px;font-size:11.5px;color:var(--dim)}
-.chips s{padding:1px 8px;border:1px dashed var(--dim);text-decoration-color:var(--a)}
+.chips s{padding:1px 8px;border:1px dashed var(--faint);text-decoration-color:var(--a)}
 .huge{display:block;font:600 46px/1.1 var(--mono);letter-spacing:-.06em;color:var(--a);margin:6px 0 10px}
 .rule{display:block;margin:8px 0;padding:5px 10px;background:var(--a);color:#000;font-weight:500}
 
@@ -261,9 +271,10 @@ h1>span:first-child{margin-top:-.1em}
 .cta-block h2{font-size:clamp(44px,8.4vw,120px);line-height:.9;letter-spacing:-.06em;font-weight:600}
 .one{display:flex;align-items:stretch;width:100%;margin-top:56px;background:#08080b;color:var(--ink);box-shadow:12px 12px 0 rgba(0,0,0,.28);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
 .one:hover{transform:translate(-4px,-4px);box-shadow:16px 16px 0 rgba(0,0,0,.28)}
-.one code{flex:1;padding:28px 32px;font-size:clamp(13px,1.35vw,17px);line-height:1.8;word-break:break-word}
+.one>span{display:grid;place-items:center;padding-left:32px;font-size:clamp(13px,1.35vw,17px);color:var(--lime)}
+.one code{flex:1;padding:28px 32px 28px 1ch;font-size:clamp(13px,1.35vw,17px);line-height:1.8;word-break:break-word}
 .one em{display:grid;place-items:center;margin:0;padding:0 32px;border-left:1px solid #26262d;color:var(--lime);font-size:12px}
-.setup{grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.setup{grid-template-columns:repeat(3,1fr)}
 .step{padding:36px 32px 40px}
 .step h4{font-size:19px;font-weight:500;letter-spacing:-.02em;color:var(--mut)}
 .step h4 b{font:600 1em var(--mono);color:var(--a);margin-right:.4em}
@@ -274,10 +285,44 @@ h1>span:first-child{margin-top:-.1em}
 .done em{color:var(--a)!important}
 .one.done em{color:#fff!important}
 
+/* a pixel-dither edge between the dark page and the lime block */
+.dither{position:relative;height:72px;background:
+  linear-gradient(90deg,var(--lime) 75%,transparent 0) 0 54px/72px 18px repeat-x,
+  linear-gradient(90deg,var(--lime) 50%,transparent 0) 18px 36px/36px 18px repeat-x,
+  linear-gradient(90deg,var(--lime) 25%,transparent 0) 36px 18px/72px 18px repeat-x,
+  linear-gradient(90deg,var(--lime) 12.5%,transparent 0) 90px 0/144px 18px repeat-x,var(--bg)}
+.dither::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(var(--bg) 3px,transparent 3px) 0 0/18px 18px,linear-gradient(90deg,var(--bg) 3px,transparent 3px) 0 0/18px 18px}
+.dither.flip{transform:scaleY(-1)}
+
+/* copy feedback: a glint sweeps the command and the $ becomes a tick */
+[data-copy]{position:relative;overflow:hidden}
+[data-copy].done::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(100deg,transparent 25%,rgba(255,255,255,.45) 50%,transparent 75%);animation:sweep .7s var(--ease) both}
+@keyframes sweep{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+
+/* helpers: skip link, screen-reader text, toast, shortcut sheet */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.skip{position:fixed;top:8px;left:8px;z-index:50;padding:12px 16px;background:var(--lime);color:#000;font:500 13px/1 var(--mono);transform:translateY(-200%)}
+.skip:focus{transform:none}
+.toast{position:fixed;left:50%;bottom:28px;z-index:40;padding:13px 18px;background:var(--lime);color:#000;font:500 13px/1 var(--mono);box-shadow:6px 6px 0 var(--violet);
+  transform:translate(-50%,24px);opacity:0;pointer-events:none;transition:transform .3s var(--ease),opacity .3s}
+.toast.on{transform:translate(-50%,0);opacity:1}
+dialog{padding:0;border:1px solid #34343d;background:#0b0b0e;color:var(--ink);width:min(440px,calc(100vw - 32px));box-shadow:14px 14px 0 rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(7,7,9,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+dialog h2{padding:18px 22px;border-bottom:1px solid var(--line);font:600 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+dialog li{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:13px 22px;border-bottom:1px solid var(--line);font-size:15px}
+dialog ul{list-style:none;margin:0;padding:0}
+dialog li span{display:flex;gap:6px}
+dialog kbd{min-width:26px;height:26px;font-size:12px;color:var(--lime);border-color:var(--faint)}
+dialog form button{width:100%;padding:16px 22px;font:500 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mut);text-align:center;transition:background .2s,color .2s}
+dialog form button:hover{background:var(--lime);color:#000}
+
 /* ───────── footer ───────── */
 footer{position:relative;overflow:hidden}
-.foot{padding:28px 32px;font:500 11px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
-.foot a:hover{color:var(--lime)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;padding:28px 32px;font:500 11px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.foot a:hover,.foot button:hover{color:var(--lime)}
+.foot button{display:inline-flex;align-items:center;gap:10px;font:inherit;letter-spacing:inherit;text-transform:inherit;transition:color .2s}
 .word{display:block;margin:0 0 -.3em;text-align:center;font:600 27vw/0.8 var(--mono);letter-spacing:-.08em;color:var(--bg);-webkit-text-stroke:2px var(--line);paint-order:stroke fill;user-select:none;transition:-webkit-text-stroke-color .4s}
 @media (min-width:1312px){.word{font-size:354px}}
 footer:hover .word{-webkit-text-stroke-color:var(--lime)}
@@ -322,6 +367,7 @@ footer:hover .word{-webkit-text-stroke-color:var(--lime)}
   .mrow button{justify-self:start}
   .cta-block{padding:64px 20px 60px}
   .one{flex-direction:column;box-shadow:6px 6px 0 rgba(0,0,0,.28);margin-top:36px}
+  .one>span{display:none}
   .one code{padding:20px}
   .one em{padding:14px 20px;border-left:0;border-top:1px solid #26262d;justify-content:start}
   .step{padding:28px 20px 32px}
@@ -335,6 +381,7 @@ footer:hover .word{-webkit-text-stroke-color:var(--lime)}
 </style>
 </head>
 <body>
+<a class="skip" href="#tools">Skip to the tools</a>
 <div class="wrap">
 
 <header class="nav">
@@ -364,7 +411,7 @@ footer:hover .word{-webkit-text-stroke-color:var(--lime)}
       <div class="win-bar"><i></i><i></i><i></i><span>fzf --preview</span><span>↑↓ move · ↵ open</span></div>
       <div class="fzf">
         <div class="fzf-l">
-          <label class="fzf-q"><span class="pr">&gt;</span><input id="q" type="text" placeholder="type to filter" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Filter the tools"></label>
+          <label class="fzf-q"><span class="pr">&gt;</span><input id="q" type="text" role="combobox" aria-expanded="true" aria-controls="rows" aria-autocomplete="list" placeholder="type to filter" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Filter the sixteen tools"></label>
           <div class="fzf-n"><span><b id="cnt">16</b>/16</span></div>
           <div class="fzf-rows" id="rows" role="listbox" aria-label="Tools"></div>
         </div>
@@ -646,10 +693,12 @@ console.log(`listening on :${port}`);</pre>
 
 <!-- ═════ install ═════ -->
 <section class="sec" id="install">
+  <div class="dither"></div>
   <div class="cta-block">
     <h2>Sixteen tools.<br><em class="s">One line.</em></h2>
-    <button type="button" class="one" data-copy><code>brew install fzf bat ripgrep fd eza zoxide jq git-delta tealdeer dust hyperfine btop lazygit gh atuin starship</code><em>copy</em></button>
+    <button type="button" class="one" data-copy><span>$</span><code>brew install fzf bat ripgrep fd eza zoxide jq git-delta tealdeer dust hyperfine btop lazygit gh atuin starship</code><em>copy</em></button>
   </div>
+  <div class="dither flip"></div>
   <div class="grid setup">
     <div class="step" style="--a:var(--lime)">
       <h4><b>fzf</b>needs its key bindings</h4>
@@ -667,11 +716,25 @@ console.log(`listening on :${port}`);</pre>
 </section>
 
 <footer>
-  <div class="foot">Unofficial · not affiliated with <a href="https://brew.sh">Homebrew ↗</a></div>
+  <div class="foot"><span>Unofficial · not affiliated with <a href="https://brew.sh">Homebrew ↗</a></span><button type="button" id="keysBtn">Shortcuts <kbd>?</kbd></button></div>
   <span class="word" aria-hidden="true">cellar</span>
 </footer>
 
 </div>
+
+<div class="sr" id="live" aria-live="polite"></div>
+<div class="toast" id="toast" role="status"></div>
+<dialog id="keys" aria-label="Keyboard shortcuts">
+  <h2>Keyboard</h2>
+  <ul>
+    <li>Search the tools<span><kbd>/</kbd></span></li>
+    <li>Next / previous tool<span><kbd>j</kbd><kbd>k</kbd></span></li>
+    <li>Jump to the selected tool<span><kbd>↵</kbd></span></li>
+    <li>Copy its install command<span><kbd>c</kbd></span></li>
+    <li>This sheet<span><kbd>?</kbd></span></li>
+  </ul>
+  <form method="dialog"><button>Close</button></form>
+</dialog>
 
 <script>
 (() => {
@@ -701,7 +764,7 @@ console.log(`listening on :${port}`);</pre>
 
   const stage = $('.stage'), win = $('#fz'), rows = $('#rows'), q = $('#q'), cnt = $('#cnt');
   const pvName = $('#pvName'), pvTag = $('#pvTag'), pvBody = $('#pvBody'), pvCode = $('#pvCode'), pvOpen = $('#pvOpen');
-  const hOld = $('#hOld'), hNew = $('#hNew');
+  const hOld = $('#hOld'), hNew = $('#hNew'), live = $('#live'), toast = $('#toast'), sheet = $('#keys');
 
   let list = [], sel = 0, touched = false, hovering = false, visible = true;
 
@@ -764,6 +827,11 @@ console.log(`listening on :${port}`);</pre>
     pvOpen.href = '#' + t.id;
     pvOpen.hidden = t.id === 'fzf';
     pvBody.replaceChildren(demo(t));
+    q.setAttribute('aria-activedescendant', 'opt-' + t.id);
+    if (touched) {
+      history.replaceState(null, '', '#/' + t.id);
+      live.textContent = `${t.name}: ${t.tag}. Replaces ${t.old}.`;
+    }
     const r = rows.children[sel];
     if (r && rows.scrollHeight > rows.clientHeight) {
       const top = r.offsetTop - rows.offsetTop;
@@ -783,7 +851,7 @@ console.log(`listening on :${port}`);</pre>
     }).filter(Boolean).sort((a, b) => b.score - a.score || a.i - b.i);
 
     rows.innerHTML = list.length ? list.map(({ t, pos }, i) =>
-      `<div class="row" role="option" data-i="${i}"><span>${[...t.name].map((ch, k) => pos.includes(k) ? `<b>${ch}</b>` : ch).join('')}</span><s>${t.old}</s></div>`
+      `<div class="row" role="option" id="opt-${t.id}" data-i="${i}"><span>${[...t.name].map((ch, k) => pos.includes(k) ? `<b>${ch}</b>` : ch).join('')}</span><s>${t.old}</s></div>`
     ).join('') : '<div class="none">no match</div>';
     cnt.textContent = list.length;
     sel = 0;
@@ -796,14 +864,17 @@ console.log(`listening on :${port}`);</pre>
     show();
   }
 
-  function open() {
+  /* scroll the page to the selected tool; fzf lives in the hero itself */
+  function reveal() {
     const t = list[sel]?.t;
-    if (!t || t.id === 'fzf') return;
-    const el = document.getElementById(t.id);
-    el.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'center' });
+    if (!t) return;
+    const home = t.id === 'fzf', el = home ? stage : document.getElementById(t.id);
+    el.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: home ? 'start' : 'center' });
+    if (home) return;
     el.classList.add('in', 'flash');
     setTimeout(() => el.classList.remove('flash'), 1600);
   }
+  const open = () => { if (list[sel]?.t.id !== 'fzf') reveal(); };
 
   q.addEventListener('input', () => { touched = true; render(); });
   q.addEventListener('keydown', e => {
@@ -831,9 +902,49 @@ console.log(`listening on :${port}`);</pre>
     q.focus({ preventScroll: true });
   }
   $('#find').addEventListener('click', focusSearch);
-  addEventListener('keydown', e => {
-    if (e.key === '/' && !e.metaKey && !e.ctrlKey && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) focusSearch(e);
+
+  /* the wheel walks the list; a sideways swipe on the preview does the same */
+  let wheel = 0;
+  $('.fzf-l').addEventListener('wheel', e => {
+    if (rows.scrollHeight > rows.clientHeight) return;            // phones: the list scrolls natively
+    const d = Math.sign(e.deltaY);
+    if (!d || (d > 0 && sel >= list.length - 1) || (d < 0 && sel <= 0)) return;   // at an end, let the page scroll
+    e.preventDefault();
+    wheel += e.deltaY;
+    if (Math.abs(wheel) < 30) return;
+    wheel = 0; touched = true; sel += d; show();
+  }, { passive: false });
+  let sx = 0, sy = 0;
+  pvBody.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  pvBody.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) { touched = true; move(dx < 0 ? 1 : -1); }
   });
+
+  /* page-wide keys */
+  let toastTimer;
+  function say(msg) {
+    toast.textContent = msg;
+    toast.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('on'), 1600);
+  }
+  addEventListener('keydown', e => {
+    if (e.metaKey || e.ctrlKey || e.altKey || /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
+    if (sheet.open && e.key !== '?') return;
+    switch (e.key) {
+      case '/': focusSearch(e); break;
+      case 'j': case 'k': touched = true; move(e.key === 'j' ? 1 : -1); reveal(); break;
+      case 'c': {
+        const t = list[sel]?.t;
+        if (t) navigator.clipboard?.writeText('brew install ' + t.brew).then(() => say('✓ brew install ' + t.brew), () => {});
+        break;
+      }
+      case '?': e.preventDefault(); sheet.open ? sheet.close() : sheet.showModal(); break;
+    }
+  });
+  $('#keysBtn').addEventListener('click', () => sheet.showModal());
+  sheet.addEventListener('click', e => { if (e.target === sheet) sheet.close(); });
 
   /* until someone touches it, the list walks itself and the headline follows */
   new IntersectionObserver(([e]) => visible = e.isIntersecting, { threshold: 0.2 }).observe(stage);
@@ -841,7 +952,16 @@ console.log(`listening on :${port}`);</pre>
     if (!touched && !hovering && visible && !document.hidden && document.activeElement !== q) move(1);
   }, 2600);
 
-  render();
+  /* deep links: #/rg opens with ripgrep selected and the headline already on it */
+  function fromHash() {
+    const m = location.hash.match(/^#\/([\w-]+)$/);
+    const i = m ? TOOLS.findIndex(t => t.id === m[1] || t.name === m[1]) : -1;
+    if (i < 0) return false;
+    touched = true; q.value = ''; render(); sel = i; show();
+    return true;
+  }
+  addEventListener('hashchange', fromHash);
+  fromHash() || render();
 
   /* ── light under the cursor on the pixel field ── */
   const field = $('#field'), mosaic = $('.mosaic');
@@ -861,15 +981,21 @@ console.log(`listening on :${port}`);</pre>
   /* ── click any command to copy it ── */
   document.addEventListener('click', async e => {
     const b = e.target.closest('[data-copy]');
-    if (!b) return;
-    const text = $('code', b).textContent;
-    try { await navigator.clipboard.writeText(text); }
-    catch { const r = document.createRange(); r.selectNodeContents($('code', b)); getSelection().removeAllRanges(); getSelection().addRange(r); return; }
-    const label = $('em', b) || $('code', b), was = label.textContent;
-    if (b.classList.contains('done')) return;
+    if (!b || b.classList.contains('done')) return;
+    const code = $('code', b);
+    try { await navigator.clipboard.writeText(code.textContent); }
+    catch { const r = document.createRange(); r.selectNodeContents(code); getSelection().removeAllRanges(); getSelection().addRange(r); return; }
+    const sig = $(':scope > span', b), label = $('em', b) || (sig ? null : code);
+    const was = [sig?.textContent, label?.textContent];
+    b.style.minWidth = b.offsetWidth + 'px';
     b.classList.add('done');
-    label.textContent = 'copied';
-    setTimeout(() => { label.textContent = was; b.classList.remove('done'); }, 1400);
+    if (sig) sig.textContent = '✓';
+    if (label) label.textContent = sig ? 'copied' : '✓ copied';
+    setTimeout(() => {
+      if (sig) sig.textContent = was[0];
+      if (label) label.textContent = was[1];
+      b.classList.remove('done'); b.style.minWidth = '';
+    }, 1400);
   });
 
   /* ── reveal on scroll, staggered across a row ── */
