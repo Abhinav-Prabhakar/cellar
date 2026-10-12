@@ -4,7 +4,7 @@ A visual field guide to sixteen Homebrew command-line tools. Each tool gets one 
 
 ![Cellar hero: a working fzf-style finder over sixteen tools](docs/screenshots/hero.png)
 
-**Live site:** https://CodeDreamer06.github.io/cellar/
+**Live site:** https://abhinav-prabhakar.github.io/cellar/
 
 Cellar is a single static page: HTML, CSS and vanilla JavaScript, with no build step and no dependencies. The fonts are self-hosted.
 
